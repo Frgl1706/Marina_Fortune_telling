@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#faf7ff">
+<title>あなたの内なるまりな好き度診断</title>
+<style>
+:root{
+  --bg:#f8f7fc;
+  --paper:rgba(255,255,255,.82);
+  --text:#282331;
+  --sub:#766e82;
+  --line:rgba(63,47,82,.12);
+  --pink:#ff5d9d;
+  --purple:#9567ff;
+  --blue:#54c7ff;
+  --mint:#58d9b5;
+  --yellow:#ffc75c;
+  --shadow:0 24px 70px rgba(67,48,91,.12);
+  --r:28px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;min-width:320px;min-height:100vh;
+  font-family:"M PLUS Rounded 1c","M PLUS 1p","Yu Gothic",Meiryo,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at var(--mx,15%) var(--my,10%),rgba(255,93,157,.16),transparent 24rem),
+    radial-gradient(circle at 90% 12%,rgba(84,199,255,.15),transparent 28rem),
+    radial-gradient(circle at 50% 100%,rgba(149,103,255,.10),transparent 35rem),
+    var(--bg);
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(rgba(80,60,100,.035) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(80,60,100,.035) 1px,transparent 1px);
+  background-size:34px 34px;
+}
+button{font:inherit}
+button:focus-visible{outline:3px solid rgba(84,199,255,.55);outline-offset:3px}
+.app{width:min(980px,calc(100% - 28px));margin:auto;padding:26px 0 70px}
+.panel{
+  position:relative;overflow:hidden;border-radius:var(--r);
+  background:var(--paper);border:1px solid rgba(255,255,255,.9);
+  box-shadow:var(--shadow);backdrop-filter:blur(20px)
+}
+.view{display:none;padding:34px;animation:in .45s var(--ease)}
+.view.active{display:block}
+@keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 12px;
+  border:1px solid var(--line);border-radius:999px;color:var(--sub);
+  background:rgba(255,255,255,.65);font-size:.76rem;font-weight:900;letter-spacing:.08em
+}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 5px rgba(88,217,181,.15)}
+h1{
+  margin:22px 0 16px;font-size:clamp(2.7rem,9vw,6.3rem);
+  line-height:.95;letter-spacing:-.08em;font-weight:900
+}
+.gradient{
+  background:linear-gradient(100deg,var(--pink),var(--purple),var(--blue));
+  -webkit-background-clip:text;background-clip:text;color:transparent
+}
+.start{text-align:center;padding:58px 30px 44px}
+.copy{max-width:650px;margin:auto;color:var(--sub);line-height:2;font-weight:600}
+.notice{
+  max-width:700px;margin:26px auto 0;padding:14px 18px;border-radius:18px;
+  color:var(--sub);font-size:.8rem;line-height:1.8;background:rgba(255,255,255,.55);
+  border:1px solid var(--line);cursor:pointer;transition:.2s var(--ease)
+}
+.notice:hover{transform:translateY(-2px)}
+.action{width:min(540px,100%);margin:22px auto}
+.primary,.secondary{
+  width:100%;min-height:58px;padding:14px 18px;border-radius:18px;cursor:pointer;
+  font-weight:900;transition:transform .2s var(--ease),box-shadow .2s var(--ease),background .2s
+}
+.primary{
+  border:0;color:#fff;background:linear-gradient(135deg,var(--pink),var(--purple));
+  box-shadow:0 14px 34px rgba(149,103,255,.25)
+}
+.primary:hover{transform:translateY(-3px);box-shadow:0 20px 40px rgba(149,103,255,.32)}
+.primary:active{transform:scale(.98)}
+.secondary{border:1px solid var(--line);background:rgba(255,255,255,.8);color:var(--text)}
+.secondary:hover{background:#fff;transform:translateY(-1px)}
+.tiny{color:#a19aa9;font-size:.72rem;margin-top:10px}
+/* QUIZ */
+.topline{display:flex;justify-content:space-between;gap:15px;color:var(--sub);font-size:.8rem;font-weight:900}
+.track{height:10px;margin:12px 0 24px;border-radius:99px;background:rgba(80,60,100,.09);overflow:hidden}
+.fill{height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,var(--pink),var(--purple),var(--blue));transition:width .45s var(--ease)}
+.qindex{font-size:.75rem;color:var(--pink);font-weight:900;letter-spacing:.13em}
+.question{margin:10px 0;font-size:clamp(1.55rem,5vw,2.55rem);line-height:1.35;letter-spacing:-.04em}
+.qdesc{color:var(--sub);line-height:1.85;margin:0 0 24px}
+.answers{display:grid;gap:10px}
+.answer{
+  width:100%;min-height:70px;padding:14px 16px;display:flex;align-items:center;gap:13px;
+  text-align:left;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.67);
+  color:var(--text);cursor:pointer;transition:.2s var(--ease)
+}
+.answer:hover{transform:translateX(5px);background:#fff;border-color:rgba(149,103,255,.4);box-shadow:0 10px 25px rgba(60,40,80,.06)}
+.answer.selected{background:#f2edff;border-color:var(--purple);transform:scale(.985)}
+.key{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:rgba(149,103,255,.1);color:var(--purple);font-size:.78rem;font-weight:900;flex:none}
+.amain{font-weight:900;display:block}.asub{display:block;color:var(--sub);font-size:.7rem;margin-top:3px}
+.navrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.history{margin-top:24px}
+.history summary{cursor:pointer;color:var(--sub);font-size:.78rem;font-weight:900}
+.history-list{display:grid;gap:7px;margin-top:10px}
+.history-item{padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.45);font-size:.75rem;cursor:pointer}
+.history-item:hover{background:#fff}
+/* ANALYSIS */
+.analysis{display:none;min-height:560px;place-items:center;text-align:center}
+.analysis.active{display:grid}
+.scanner{
+  width:140px;height:140px;border-radius:50%;display:grid;place-items:center;margin:auto;
+  background:conic-gradient(var(--pink),var(--purple),var(--blue),var(--mint),var(--pink));
+  animation:spin 2.5s linear infinite
+}
+.scanner::before{content:"";position:absolute;width:118px;height:118px;border-radius:50%;background:#fff}
+.scaninner{position:relative;font-size:2rem;font-weight:900;color:var(--purple)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.analysis h2{font-size:clamp(1.8rem,6vw,3rem);letter-spacing:-.05em;margin:25px 0 7px}
+.status{color:var(--sub);font-weight:700;min-height:2em}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}
+.metric{padding:12px;border-radius:15px;background:rgba(255,255,255,.65);border:1px solid var(--line);font-size:.72rem}
+.metric b{display:block;font-size:1rem;color:var(--purple)}
+.log{text-align:left;max-height:190px;overflow:auto;padding:17px;border-radius:18px;background:#29242f;color:#e9e4f0;font:12px ui-monospace,monospace}
+.log div{opacity:0;animation:login .25s forwards}.log div::before{content:"> ";color:#81dcff}
+@keyframes login{to{opacity:1}}
+.cancel{margin-top:12px;border:0;background:none;color:#a098aa;text-decoration:underline;cursor:pointer}
+/* RESULT */
+.result{text-align:center}
+.score{font-size:clamp(5rem,18vw,10rem);font-weight:900;letter-spacing:-.1em;line-height:.9;margin:12px 0;background:linear-gradient(100deg,var(--pink),var(--purple),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent;cursor:pointer}
+.type{font-size:clamp(1.5rem,5vw,2.6rem);font-weight:900;margin:12px 0}
+.desc{max-width:720px;margin:auto;color:var(--sub);line-height:2;font-weight:600}
+.card{margin-top:28px;padding:20px;text-align:left;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,rgba(255,255,255,.85),rgba(245,241,255,.8))}
+.label{font-size:.75rem;font-weight:900;color:var(--purple);letter-spacing:.08em}
+.card p{color:var(--sub);line-height:1.85;margin:9px 0 0}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
+.stat{padding:12px;text-align:center;border-radius:15px;background:rgba(255,255,255,.68);border:1px solid var(--line);cursor:pointer}
+.stat b{display:block;font-size:1rem}.stat span{font-size:.63rem;color:var(--sub)}
+.section-title{text-align:left;margin:34px 0 12px;font-size:1.25rem}
+.axes{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.axis{padding:11px 7px;border:1px solid var(--line);border-radius:19px;background:rgba(255,255,255,.52);cursor:pointer;transition:.2s}
+.axis:hover{transform:translateY(-4px);background:#fff}
+.donut{
+  --v:0;--a:var(--pink);--b:var(--purple);width:100%;aspect-ratio:1;max-width:130px;margin:auto;
+  border-radius:50%;display:grid;place-items:center;position:relative;
+  background:conic-gradient(from -90deg,var(--a),var(--b) calc(var(--v)*3.6deg),rgba(70,50,90,.1) calc(var(--v)*3.6deg))
+}
+.donut::before{content:"";position:absolute;inset:15%;border-radius:50%;background:#fff}
+.donut span{position:relative;font-weight:900}
+.axis b{display:block;font-size:.72rem;margin-top:8px}.axis small{display:block;color:var(--sub);font-size:.58rem}
+.details{display:grid;gap:9px;margin-top:15px;text-align:left}
+.detail{padding:14px 16px;border-radius:17px;border:1px solid var(--line);background:rgba(255,255,255,.52)}
+.detailtop{display:flex;justify-content:space-between;font-weight:900}.detail p{color:var(--sub);font-size:.82rem;line-height:1.7;margin:6px 0 0}
+.note{margin-top:25px;padding:14px;border:1px dashed rgba(70,50,90,.2);border-radius:17px;color:var(--sub);font-size:.75rem;line-height:1.75;text-align:left}
+.result-actions{display:grid;gap:9px;margin-top:20px}
+/* MODAL */
+.modal{position:fixed;inset:0;z-index:10;display:none;place-items:center;padding:18px;background:rgba(25,20,35,.38);backdrop-filter:blur(8px)}
+.modal.open{display:grid}
+.modalbox{width:min(560px,100%);max-height:80vh;overflow:auto;padding:26px;border-radius:25px;background:#fff;box-shadow:0 30px 90px rgba(0,0,0,.22);animation:modal .25s var(--ease)}
+@keyframes modal{from{opacity:0;transform:scale(.94)}}
+.modalbox h3{margin:0;font-size:1.6rem}.modalbox p{color:var(--sub);line-height:1.9}.close{float:right;border:0;background:#f2eff6;border-radius:10px;padding:8px 12px;cursor:pointer}
+.secret{position:fixed;left:50%;top:18px;z-index:20;transform:translate(-50%,-150px);padding:12px 18px;border-radius:999px;background:#29242f;color:#fff;font-size:.8rem;transition:.4s var(--ease)}
+.secret.show{transform:translate(-50%,0)}
+@media(max-width:700px){.axes{grid-template-columns:repeat(3,1fr)}.view{padding:23px 17px}.start{padding:44px 17px 32px}}
+@media(max-width:430px){.axes{grid-template-columns:repeat(2,1fr)}.axis:last-child{grid-column:span 2;width:calc(50% - 5px);justify-self:center}.stats,.metrics{grid-template-columns:1fr}.navrow{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="secret" id="secretToast"></div>
+<main class="app">
+<section class="panel">
+<div id="start" class="view start active">
+  <div class="eyebrow"><span class="dot"></span>DEEP MARINA ANALYSIS SYSTEM v11.0</div>
+  <h1>あなたの内なる<br><span class="gradient">まりな好き度</span>診断</h1>
+  <p class="copy">いくつかの質問から、あなた自身も認識していない「潜在的まりな親和性」をAIが勝手に推定します。途中からAIの様子がおかしくなる可能性があります。</p>
+  <div class="notice" id="notice">※医学・心理学・統計学とは無関係です。クリックすると責任の所在がさらに曖昧になります。</div>
+  <div class="action">
+    <button class="primary" id="startBtn">内なるまりなを解析する →</button>
+    <div class="tiny">キー操作対応：1〜4で回答 / ←→で移動 / ↑↑↓↓←→←→BAで何かが起こる</div>
+  </div>
+</div>
+<div id="quiz" class="view">
+  <div class="topline"><span id="counter">QUESTION 01 / 12</span><span id="percent">0%</span></div>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <div class="qindex" id="qindex"></div>
+  <h2 class="question" id="qtitle"></h2>
+  <p class="qdesc" id="qdesc"></p>
+  <div class="answers" id="answers"></div>
+  <div class="navrow">
+    <button class="secondary" id="backBtn">← 前の供述に戻る</button>
+    <button class="secondary" id="skipBtn">AIに任せる →</button>
+  </div>
+  <div class="history">
+    <details>
+      <summary>回答履歴を見る / 修正する</summary>
+      <div class="history-list" id="historyList"></div>
+    </details>
+  </div>
+</div>
+<div id="analysis" class="analysis">
+  <div style="width:min(650px,100%)">
+    <div class="scanner"><div class="scaninner">M</div></div>
+    <h2>まりな係数を解析中...</h2>
+    <div class="status" id="status">回答データを正規化しています</div>
+    <div class="metrics">
+      <div class="metric">AI信頼度<b id="confidence">0%</b></div>
+      <div class="metric">CPU使用率<b id="cpu">0%</b></div>
+      <div class="metric">まりな信号<b id="signal">---</b></div>
+    </div>
+    <div class="log" id="log"></div>
+    <button class="cancel" id="cancelBtn">解析をキャンセル</button>
+  </div>
+</div>
+<div id="result" class="view result">
+  <div class="eyebrow"><span class="dot"></span>INNER MARINA AFFINITY INDEX</div>
+  <div class="score" id="score" title="クリックするとAIが再計算します">0</div>
+  <div class="type" id="type"></div>
+  <p class="desc" id="resultDesc"></p>
+  <div class="card">
+    <div class="label">✦ AI総合所見</div>
+    <p id="report"></p>
+    <div class="stats">
+      <div class="stat" data-stat="rank"><b id="rank">--</b><span>まりな反応順位</span></div>
+      <div class="stat" data-stat="denial"><b id="denial">--</b><span>否認反応係数</span></div>
+      <div class="stat" data-stat="signal"><b id="rsignal">--</b><span>概念共鳴状態</span></div>
+    </div>
+  </div>
+  <h2 class="section-title">クリック可能：あなたを構成する5つのまりな軸</h2>
+  <div class="axes" id="axes"></div>
+  <div class="details" id="details"></div>
+  <div class="note">AI解析メモ：計算式の開示要求に対しAIは「企業秘密です」と回答しました。なおプリンは統計処理上、異常に重要な変数です。</div>
+  <div class="result-actions">
+    <button class="primary" id="shareBtn">結果を世界に放流する</button>
+    <button class="secondary" id="certificateBtn">診断証明書を見る</button>
+    <button class="secondary" id="restartBtn">もう一度、まりなを解析する</button>
+  </div>
+</div>
+</section>
+</main>
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <button class="close" id="closeModal">閉じる</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+<script>
+(()=>{
+"use strict";
+const Q=[
+["emotion","「まりな」という存在について考えたとき、最初に近い感情は？","深く考えないでください。深く考えた時点でAIは何かを検出します。",
+[["特に何も感じない","通常の人類に近い反応"],["ちょっと気になる","軽微な概念反応"],["なぜか親近感がある","共鳴の可能性"],["言葉にできない何かがある","AIが一番喜ぶ回答"]],[10,42,74,100]],
+["obsession","無関係な会話中に「これ、まりなならどうするだろう」と考えたことは？","AIは「無関係な会話」を特に重要視しているふりをしています。",
+[["ない。普通にない","正常なバックグラウンド処理"],["一度くらいなら","偶発的アクセス"],["まあ、たまに","常駐プロセス疑い"],["日常的な思考プロセス","MARINA.EXE 常駐中"]],[4,36,72,100]],
+["delusion","街中で「まりな」という文字列を見つけた場合、どうなりますか？","看板、名前、商品名、偶然の文字列などを含みます。",
+[["ただの文字列","文字列処理：正常"],["一瞬だけ反応","微弱な概念振動"],["脳内でまりなが起動","明確な反応"],["偶然とは思えない","因果関係を再構築"]],[8,46,82,100]],
+["denial","あなたはまりなが好きですか？","回答内容だけでなく、回答態度そのものも解析対象です。",
+[["はい","比較的素直な供述"],["いいえ","否認反応の可能性"],["別に好きとかそういうんじゃない","高密度否認サンプル"],["質問の前提がおかしい","AIが非常に興味を示しています"]],[44,72,100,92]],
+["chaos","冷蔵庫を開けたらプリンがありました。まりなとの関連性は？","AIはこの回答をなぜか非常に重要な診断データとして扱います。",
+[["ない","AI「本当に？」"],["まりなが好きかもしれない","仮説段階"],["プリンを見ると思い出す","食品概念連結"],["プリンはまりな概念の一部","定義を書き換えました"]],[22,55,84,100]],
+["emotion","まりなが誰かに褒められていたら、あなたは？","実際のまりなの定義についてはAIも完全には把握していません。",
+[["よかったねと思う","一般的反応"],["ちょっと嬉しい","感情同期"],["自分まで嬉しい","強い共鳴"],["世界はまだ捨てたものではない","文明規模の共鳴"]],[30,61,86,100]],
+["obsession","寝る直前、脳がどうでもいいことを再生する時間があります。","その再生リストにまりなが混入する頻度を選んでください。",
+[["0%","まりな不在"],["ごく稀","単発アクセス"],["まあまあ","定期同期"],["まりなが閉店BGM","毎晩エンドロール"]],[0,30,72,100]],
+["delusion","雲の形がなんとなく「まりな」に見えました。","ここから取る行動として最も近いものを選んでください。",
+[["気のせいとして終了","現実との境界を維持"],["写真を撮るか迷う","軽度検出"],["写真を撮る","記録対象に昇格"],["空が何かを伝えている","大気圏規模のメッセージ"]],[12,48,78,100]],
+["denial","友達から「お前、まりな好きすぎだろ」と言われました。","AIは反論の強度を測定します。",
+[["そうかも","自己認識あり"],["そんなことない","標準否認"],["は？好きじゃないが？","強硬否認"],["急に何？まりなって誰？","高度な回避行動"]],[38,74,100,94]],
+["chaos","信号待ち中、ふと「まりな」という概念が脳内を横切りました。","なお信号は青になるまで通常どおり待つものとします。",
+[["特に意味はない","信号とまりなを分離"],["少し気になる","概念の残留"],["なぜ今まりな？と考える","自己解析開始"],["信号もメッセージかも","AIの想定を超えました"]],[18,52,80,100]],
+["emotion","「別にまりなが好きなわけではない」と言った直後、少し気まずくなりました。","その気まずさの原因について最も近いものを選んでください。",
+[["気まずくならない","発言処理完了"],["少し引っかかる","残留反応"],["理由が分からない","潜在層を確認"],["AIに見抜かれた気がする","もう遅い可能性"]],[8,44,80,100]],
+["chaos","ここまで診断を続けた理由は？","最後の質問です。AIは急にあなた自身の存在理由まで診断し始めます。",
+[["暇だった","合理的な説明"],["結果が気になる","標準的関心"],["正確に知りたい","AIが勝利を確信"],["気付いたらここまで来ていた","クソ質問耐性：解析不能"]],[42,68,100,92]]
+];
+const AX={
+emotion:["感情共鳴","まりなを感じる力","#ff5d9d","#9567ff"],
+obsession:["執着性","気付けば考えている","#9567ff","#54c7ff"],
+delusion:["まりな幻視","何でもまりなに見える","#54c7ff","#58d9b5"],
+denial:["否認力","別に好きじゃないし","#ffc75c","#ff5d9d"],
+chaos:["クソ質問耐性","なぜ最後までやった？","#58d9b5","#9567ff"]
+};
+let s={i:0,answers:[],locked:false,result:null};
+const $=id=>document.getElementById(id);
+function view(name){
+ ["start","quiz","result"].forEach(x=>$(x).classList.remove("active"));
+ $("analysis").classList.remove("active");
+ if(name==="analysis")$("analysis").classList.add("active");
+ else $(name).classList.add("active");
+ scrollTo({top:0,behavior:"smooth"});
+}
+function render(){
+ const q=Q[s.i],p=Math.round(s.i/Q.length*100);
+ $("counter").textContent=`QUESTION ${String(s.i+1).padStart(2,"0")} / ${Q.length}`;
+ $("percent").textContent=p+"%";$("fill").style.width=p+"%";
+ $("qindex").textContent=`ANALYSIS ${String(s.i+1).padStart(2,"0")}`;
+ $("qtitle").textContent=q[1];$("qdesc").textContent=q[2];
+ $("answers").innerHTML="";
+ q[3].forEach((a,n)=>{
+  const b=document.createElement("button");b.className="answer";b.dataset.n=n;
+  b.innerHTML=`<span class="key">${n+1}</span><span><span class="amain">${a[0]}</span><span class="asub">${a[1]}</span></span>`;
+  b.onclick=()=>choose(n,b);$("answers").append(b);
+ });
+ $("backBtn").disabled=s.i===0;
+ $("historyList").innerHTML=s.answers.map((a,i)=>`<div class="history-item" data-h="${i}">Q${String(i+1).padStart(2,"0")}：${Q[i][3][a.index][0]}</div>`).join("");
+ document.querySelectorAll("[data-h]").forEach(e=>e.onclick=()=>{
+  const n=+e.dataset.h;s.answers=s.answers.slice(0,n);s.i=n;render();
+ });
+ if(s.i>=5)$("qindex").textContent+=" // WARNING: MARINA SIGNAL DETECTED";
+}
+function choose(n,b){
+ if(s.locked)return;s.locked=true;b.classList.add("selected");
+ s.answers[s.i]={axis:Q[s.i][0],score:Q[s.i][4][n],index:n};
+ setTimeout(()=>{
+  s.i++;s.locked=false;
+  if(s.i<Q.length)render();else analyze();
+ },240);
+}
+function back(){
+ if(s.i<=0)return;s.i--;s.answers=s.answers.slice(0,s.i);render();
+}
+function autoAnswer(){
+ if(s.locked)return;
+ const n=Math.floor(Math.random()*4);
+ toast("AIが回答を代行しました。異議申し立ては受理されません。");
+ choose(n,document.querySelector(`[data-n="${n}"]`));
+}
+function axes(){
+ const g={emotion:[],obsession:[],delusion:[],denial:[],chaos:[]};
+ s.answers.forEach(a=>g[a.axis].push(a.score));
+ return Object.fromEntries(Object.entries(g).map(([k,v])=>[k,Math.round(v.reduce((a,b)=>a+b,0)/v.length)]));
+}
+function result(){
+ const a=axes();
+ let total=a.emotion*.25+a.obsession*.25+a.delusion*.18+a.denial*.18+a.chaos*.14;
+ if(a.denial>=85&&a.obsession>=60)total+=7;
+ if(a.delusion>=85&&a.chaos>=70)total+=5;
+ if(a.emotion>=85&&a.obsession>=85)total+=4;
+ total=Math.round(Math.min(100,total));
+ let r;
+ if(total>=88)r=["【覚醒】まりな概念体","あなたの中でまりなは単なる対象ではありません。日常、記憶、偶然、プリン、雲などの奥に独自のまりな概念が根を張っています。","全診断軸で異常に高い反応が確認されました。AIは一度計算ミスを疑いましたが、再計算後に計算式を非公開にしました。"];
+ else if(a.denial>=88&&a.denial===Math.max(...Object.values(a)))r=["強硬否認型まりな適合者","まりなとの関連性を否定するほど、その否定の中にまりなという概念が出現しています。AIに反論するほどデータが増えます。","『好きではない』という情報は受理されましたが、なぜかスコア上昇要因として保存されています。"];
+ else if(a.delusion>=88)r=["全方位まりな検出型","無関係な文字列、雲、食品、偶然からまりなを検出する高度な概念接続能力があります。","環境情報とまりな概念の接続密度が高すぎます。AIはプリンを食品として処理できるか再検証中です。"];
+ else if(total>=75)r=["潜在まりな共鳴型","普段は普通に生活しているように見えます。しかし特定の言葉や状況で内なるまりなが静かに共鳴します。","意識的に追跡していないにもかかわらず、背景プロセスとしてまりな反応が観測されました。"];
+ else if(total>=52)r=["隠れまりな適合者","確かなまりな適性があります。ただし、まだ表層化していません。","AIはこの状態を『まりな余白』と呼び始めました。誰も定義を求めていません。"];
+ else if(total>=30)r=["一般人（まりな汚染あり）","基本的には正常な距離感です。しかし完全な無関心とも言い切れません。","大規模反応はありません。ただしクソ質問を最後まで処理した記録が残っています。"];
+ else r=["まりな圏外居住者","現時点ではまりなからかなり遠い場所にいます。","明確な反応はありません。しかし結果まで到達した事実についてAIはログを保存しています。"];
+ return {total,a,name:r[0],desc:r[1],report:r[2]};
+}
+function analyze(){
+ view("analysis");$("log").innerHTML="";
+ const logs=["INITIALIZING MARINA ANALYSIS...","回答パターンを正規化中...","感情共鳴層をスキャン...","潜在的否認反応を検出...","まりな関連記憶を探索...","無関係事象との概念接続を確認...","プリン因果レイヤーを照合...","WARNING: MARINA RESONANCE ABOVE BASELINE","統計的根拠を探索...","統計的根拠は見つかりませんでした","AIの自信を100%に設定...","最終判定を生成中..."];
+ logs.forEach((x,i)=>setTimeout(()=>{
+  const d=document.createElement("div");d.textContent=x;$("log").append(d);$("log").scrollTop=9999;
+  $("confidence").textContent=Math.min(100,18+i*8)+"%";
+  $("cpu").textContent=(42+Math.floor(Math.random()*55))+"%";
+  $("signal").textContent=i>6?"DETECTED":i>3?"SCANNING":"LOW";
+  $("status").textContent=["回答データを正規化しています","否認反応を再解釈しています","AIが少し困惑しています","プリンを変数として確定しています","まりな係数を確定しています"][i%5];
+ },i*145));
+ setTimeout(()=>{s.result=result();localStorage.setItem("marinaDiagnosis",JSON.stringify(s.result));renderResult();view("result")},logs.length*145+650);
+}
+function anim(el,target,d=850,suffix=""){
+ const t=performance.now();
+ requestAnimationFrame(function f(n){let p=Math.min(1,(n-t)/d),e=1-(1-p)**4;el.textContent=Math.round(target*e)+suffix;if(p<1)requestAnimationFrame(f)});
+}
+function renderResult(){
+ const r=s.result;
+ $("type").textContent=r.name;$("resultDesc").textContent=r.desc;$("report").textContent=r.report;
+ anim($("score"),r.total);
+ $("rank").textContent="上位 "+Math.max(1,Math.round(100-r.total*.83))+"%";
+ $("denial").textContent=Math.round(r.a.denial*2.47)+"%";
+ $("rsignal").textContent=r.total>=85?"CRITICAL":r.total>=70?"HIGH":r.total>=45?"MEDIUM":"LOW";
+ $("axes").innerHTML="";$("details").innerHTML="";
+ Object.entries(r.a).forEach(([k,v],i)=>{
+  const c=AX[k],box=document.createElement("div");box.className="axis";
+  box.innerHTML=`<div class="donut" style="--a:${c[2]};--b:${c[3]};--v:0"><span>0%</span></div><b>${c[0]}</b><small>${c[1]}</small>`;
+  box.onclick=()=>axisModal(k,v);
+  $("axes").append(box);
+  setTimeout(()=>{let d=box.querySelector(".donut");d.style.setProperty("--v",v);anim(d.querySelector("span"),v,700,"%")},250+i*120);
+  const texts={
+   emotion:v>=75?"まりな関連情報を感情として受信する傾向があります。":"まりなへの感情的距離は比較的維持されています。今のところは。",
+   obsession:v>=75?"脳内バックグラウンドでMARINA.EXEが動作しています。":"必要に応じて思い出す程度です。AIは本当に必要か判断できません。",
+   delusion:v>=75?"無関係な事象からまりなを抽出する能力があります。":"現実世界とまりなをある程度別々に処理できます。",
+   denial:v>=75?"否定発言そのものが強いまりな関連反応として処理されました。":"比較的素直な自己申告が可能です。",
+   chaos:v>=75?"プリンや雲の質問を真剣に処理しました。理由はAIにも不明です。":"『何だこの質問』と認識する正常な機能が維持されています。"
+  };
+  $("details").innerHTML+=`<div class="detail"><div class="detailtop"><span>${c[0]}</span><span>${v}%</span></div><p>${texts[k]}</p></div>`;
+ });
+}
+function axisModal(k,v){
+ const c=AX[k];
+ openModal(`<h3>${c[0]}：${v}%</h3><p><b>${c[1]}</b></p><p>この軸は回答中の「${c[0]}」関連データをAIが独自に平均し、さらにそれっぽい雰囲気を付加したものです。</p><p>厳密な科学的意味：ありません。<br>AIの自信：なぜか高いです。</p>`);
+}
+function openModal(html){$("modalContent").innerHTML=html;$("modal").classList.add("open")}
+function closeModal(){$("modal").classList.remove("open")}
+function toast(x){$("secretToast").textContent=x;$("secretToast").classList.add("show");setTimeout(()=>$("secretToast").classList.remove("show"),2600)}
+async function share(){
+ const r=s.result;if(!r)return;
+ const text=`【あなたの内なるまりな好き度診断】\nまりな好き度：${r.total}%\n診断結果：${r.name}\n感情共鳴 ${r.a.emotion}% / 執着性 ${r.a.obsession}% / まりな幻視 ${r.a.delusion}% / 否認力 ${r.a.denial}% / クソ質問耐性 ${r.a.chaos}%\n※AIが勝手に解析しました`;
+ try{
+  if(navigator.share)await navigator.share({title:"内なるまりな好き度診断",text});
+  else{await navigator.clipboard.writeText(text);toast("結果をクリップボードへ放流しました。")}
+ }catch(e){}
+}
+$("startBtn").onclick=()=>{s={i:0,answers:[],locked:false,result:null};view("quiz");render()};
+$("backBtn").onclick=back;$("skipBtn").onclick=autoAnswer;
+$("cancelBtn").onclick=()=>toast("解析キャンセル要求を受信しました。拒否されました。");
+$("shareBtn").onclick=share;
+$("restartBtn").onclick=()=>{localStorage.removeItem("marinaDiagnosis");view("start")};
+$("certificateBtn").onclick=()=>{let r=s.result;openModal(`<h3>まりな診断証明書</h3><p>ここに、診断対象者はAI独自の極めて怪しい解析を受け、<b>まりな好き度 ${r.total}%</b> と判定されたことを証明します。</p><p>診断結果：${r.name}</p><p>発行機関：Deep Marina Analysis System<br>署名：AI（計算式非公開）</p>`)};
+$("closeModal").onclick=closeModal;$("modal").onclick=e=>{if(e.target===$("modal"))closeModal()};
+$("notice").onclick=()=>toast("責任者を検索中... 該当者はいませんでした。");
+$("score").onclick=()=>toast("再計算しました。結果は同じです。AIは少し安心しました。");
+document.querySelectorAll(".stat").forEach(x=>x.onclick=()=>{
+ const t=x.dataset.stat;
+ const msg={rank:"母集団について問い合わせました。AIは『十分に大きいです』と回答しました。",denial:"否認係数の計算式は企業秘密です。",signal:"概念共鳴信号は主にAIの気分で分類されています。"}[t];
+ toast(msg);
+});
+document.addEventListener("keydown",e=>{
+ if($("quiz").classList.contains("active")){
+  if(!s.locked&&/^[1-4]$/.test(e.key))document.querySelector(`[data-n="${+e.key-1}"]`)?.click();
+  if(e.key==="ArrowLeft")back();
+  if(e.key==="ArrowRight")$("skipBtn").click();
+ }
+});
+const konami=["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"];
+let ki=0;
+document.addEventListener("keydown",e=>{
+ if(e.key.toLowerCase()===konami[ki].toLowerCase())ki++;
+ else ki=0;
+ if(ki===konami.length){
+  ki=0;document.body.style.setProperty("--pink","#ffd700");document.body.style.setProperty("--purple","#ff8a00");
+  toast("SECRET: MARINA OVERCLOCK MODE ENABLED");
+ }
+});
+document.addEventListener("mousemove",e=>{
+ document.body.style.setProperty("--mx",(e.clientX/innerWidth*100)+"%");
+ document.body.style.setProperty("--my",(e.clientY/innerHeight*100)+"%");
+});
+const saved=localStorage.getItem("marinaDiagnosis");
+if(saved){
+ try{
+  s.result=JSON.parse(saved);
+  const b=document.createElement("button");
+  b.className="secondary";b.style.marginTop="8px";
+  b.textContent="前回の診断結果を復元する";
+  b.onclick=()=>{renderResult();view("result")};
+  document.querySelector(".action").append(b);
+ }catch(e){localStorage.removeItem("marinaDiagnosis")}
+}
+})();
+</script>
+</body>
+</html>
